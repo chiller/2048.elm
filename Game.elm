@@ -8,13 +8,16 @@ TODO: should not spawn new if nothing changed
 import Graphics.Element exposing (..)
 import Keyboard
 import Char
-import Html exposing (text)
+import Html exposing (..)
+import Html.Attributes exposing (class, href)
+
 import Random
+import Graphics.Collage exposing (..)
 import GameUtil exposing (..)
 
 -- MODEL 
 type Direction = Left | Right | Up | Down | None
-type alias Board = Row  
+type alias Board = List Row  
 type alias Row = List Int
 type alias Game = {
   score: Int, board: Board, rand: Int,  seed: Random.Seed
@@ -24,7 +27,7 @@ defaultGame = {
   score = 0, 
   seed = (Random.initialSeed 123), 
   rand= 1, 
-  board = [0,1,0,1]}
+  board = [[0,1,0,1], [0,0,0,0], [0,0,0,0], [0,0,0,0]]}
 
 -- UPDATE
 update input game = 
@@ -42,9 +45,18 @@ update input game =
     Nothing -> defaultGame
 
 addZero newrand list = updatezero newrand 1 list 
+                       
+updatezero : Int -> Int -> Board -> Maybe Board
+updatezero index with board = 
+  let 
+    updatedBoard = updatezero' index with <| List.foldr (++) [] board
+  in case updatedBoard of 
+     Just board -> Just <| splitAt 4 <| board
+     Nothing -> Nothing
 
-updatezero :  Int -> Int -> List Int -> Maybe (List Int)
-updatezero index with list = 
+
+updatezero' :  Int -> Int -> Row -> Maybe Row
+updatezero' index with list = 
    let 
      zeros = List.length <| List.filter ( (==) 0 ) list
    in 
@@ -52,29 +64,24 @@ updatezero index with list =
    
 
 updateBoard input board = 
-  case input of 
-    Left -> mshift board 
-    Right -> List.reverse << mshift << List.reverse <| board 
+  let 
+    mshift = shift << merge << shift
+    shiftleft = List.map mshift
+    shiftright = List.map ( List.reverse << mshift << List.reverse)
+    shiftup = transpose << shiftleft << transpose
+    shiftdown = transpose << shiftright << transpose
+  in case input of 
+    Left -> shiftleft board
+    Right -> shiftright board
+    Up -> shiftup board
+    Down -> shiftdown board
     _ -> board
     
 updateScore input score = score
 
-zeroes = List.filter <| (==) 0
-nonzeroes = List.filter <| (/=) 0 
-
-shift : List Int -> List Int
-shift board = nonzeroes board ++ zeroes board
-
-mshift = shift << merge << shift
-
-merge list = case list of
-    (x::y::xs) -> 
-      if (x == y) then [x*2, 0] ++ merge xs
-      else x :: merge (y::xs)
-    xs -> xs
 -- VIEW
 
-myshow x = show x
+myshow state = show state -- collage 200 200 [toForm ( show state.board ) ]
 
 -- SIGNALS
 
@@ -93,7 +100,6 @@ arrowMap key =
 
 direction : Signal Direction
 direction = Signal.map arrowMap Keyboard.presses
-
 
 
 
