@@ -16,12 +16,16 @@ rectAt atx aty = rect [
     height (toString boxsize)] []
 
 textAt : Int -> Int -> Int -> Svg
-textAt atx aty val = text' [
+textAt atx aty val = let
+       val' = case val of
+           0 -> ""
+           _ -> toString val
+    in text' [
         fontSize "8",
         textAnchor "middle",
         x (toString (atx + floor (boxsize/2))),
         y (toString (aty + floor (boxsize/2)))
-    ] [text (toString val)]
+    ] [text val']
 
 gridRow : ((List Int), Int) -> List Svg
 gridRow (values, aty) = range 0 ((List.length values) - 1)
