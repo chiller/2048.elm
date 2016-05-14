@@ -50,3 +50,6 @@ range : Int -> Int -> List Int
 range x y = case x == y of
     True -> [y]
     False -> x :: range (x + 1) y
+
+zip : List a -> List b -> List (a, b)
+zip = List.map2 (,)
