@@ -34,7 +34,7 @@ update : Direction -> Game -> Game
 update input game =
   let
     (newrand, newseed) = Random.generate (Random.int 0 100) game.seed
-    newboard = updatezero newrand 1 <| updateBoard input game.board
+    newboard = spawnTile newrand 1 <| updateBoard input game.board
   in case newboard of
     Just board ->
     { game |
@@ -45,20 +45,22 @@ update input game =
     }
     Nothing -> defaultGame
 
-updatezero : Int -> Int -> Board -> Maybe Board
-updatezero index with board =
+spawnTile : Int -> Int -> Board -> Maybe Board
+spawnTile index val board =
   let
-    updatedBoard = updatezero' index with <| List.foldr (++) [] board
+    updatedBoard = updatezero index val <| List.concat board
   in case updatedBoard of
      Just board -> Just <| splitAt 4 <| board
+     -- TODO : game ends here
      Nothing -> Nothing
 
-updatezero' :  Int -> Int -> Row -> Maybe Row
-updatezero' index with list =
+updatezero :  Int -> Int -> Row -> Maybe Row
+updatezero index val list =
    let
      zeros = List.length <| List.filter ( (==) 0 ) list
-   in
-     if (zeros == 0) then Nothing else Just (updateone (index % zeros) with list )
+   in case zeros of
+     0 -> Nothing
+     _ -> Just (updateone (index % zeros) val list )
 
 updateBoard : Direction -> Board -> Board
 updateBoard input board =
@@ -87,6 +89,3 @@ gameState =
 
 direction : Signal Direction
 direction = Signal.map keyToDirection Keyboard.presses
-
-
-
