@@ -62,15 +62,23 @@ updatezero index val list =
      0 -> Nothing
      _ -> Just (updateone (index % zeros) val list )
 
+mshift : Row -> Row
+mshift = shift << merge << shift
+
+shiftleft : Board -> Board
+shiftleft = List.map mshift
+
+shiftright : Board -> Board
+shiftright = List.map ( List.reverse << mshift << List.reverse)
+
+shiftup : Board -> Board
+shiftup = transpose << shiftleft << transpose
+
+shiftdown : Board -> Board
+shiftdown = transpose << shiftright << transpose
+
 updateBoard : Direction -> Board -> Board
-updateBoard input board =
-  let
-    mshift = shift << merge << shift
-    shiftleft = List.map mshift
-    shiftright = List.map ( List.reverse << mshift << List.reverse)
-    shiftup = transpose << shiftleft << transpose
-    shiftdown = transpose << shiftright << transpose
-  in case input of
+updateBoard input board = case input of
     Left -> shiftleft board
     Right -> shiftright board
     Up -> shiftup board

@@ -57,4 +57,4 @@ gridBackground size = let
 view : Game -> Svg
 view gameState =
   svg [ version "1.1", x "0", y "0", viewBox "0 0 323.141 322.95" ]
-      <| List.concat [[gridBackground 4] , grid gameState.board ]
+      <| List.concat [[gridBackground 4, textAt 130 11 gameState.score] , grid gameState.board ]
