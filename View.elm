@@ -2,7 +2,8 @@ module View where
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import GameUtil exposing (range, zip)
+import Util exposing (range, zip)
+import Game exposing (Game)
 
 boxsize = 25
 boxpadding = 5
@@ -53,7 +54,7 @@ gridBackground size = let
         Svg.Attributes.style "fill:rgb(100,100,100);"
        ] []
 
-
+view : Game -> Svg
 view gameState =
   svg [ version "1.1", x "0", y "0", viewBox "0 0 323.141 322.95" ]
       <| List.concat [[gridBackground 4] , grid gameState.board ]

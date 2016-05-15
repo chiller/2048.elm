@@ -1,4 +1,4 @@
-module GameUtil where
+module Util where
 -- UTIL
 
 stail : List Int -> List Int
@@ -11,6 +11,7 @@ shead xs = case List.head xs of
   Nothing -> 0
   Just i -> i
 
+updateone : Int -> Int -> List Int -> List Int
 updateone index with list =
    if (List.isEmpty list) then [] else
      case (index, (shead list)) of
@@ -28,7 +29,6 @@ transpose list =
   case list of
     [l1, l2, l3, l4] -> List.map4 (\a b c d -> [a,b,c,d]) l1 l2 l3 l4
     _ -> []
-
 
 zeroes : List Int -> List Int
 zeroes = List.filter <| (==) 0
