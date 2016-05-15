@@ -9,8 +9,9 @@ import Util exposing (..)
 type Direction = Left | Right | Up | Down | None
 type alias Board = List Row
 type alias Row = List Int
+type alias Score = Int
 type alias Game = {
-  score: Int, board: Board, rand: Int,  seed: Random.Seed
+  score: Score, board: Board, rand: Int,  seed: Random.Seed
 }
 
 defaultGame : Game
@@ -34,11 +35,12 @@ update : Direction -> Game -> Game
 update input game =
   let
     (newrand, newseed) = Random.generate (Random.int 0 100) game.seed
-    newboard = spawnTile newrand 1 <| updateBoard input game.board
+    (board, scoreDelta) = updateBoard input game.board
+    newboard = spawnTile newrand 1 board
   in case newboard of
     Just board ->
     { game |
-      score = updateScore input game.score,
+      score = scoreDelta + game.score,
       board = board,
       seed = newseed,
       rand = newrand
@@ -62,32 +64,28 @@ updatezero index val list =
      0 -> Nothing
      _ -> Just (updateone (index % zeros) val list )
 
-mshift : Row -> Row
-mshift = shift << merge << shift
+mshiftM : Row -> M Int
+mshiftM = shift `compose` ( mergeAndScore << shift )
 
-shiftleft : Board -> Board
-shiftleft = List.map mshift
+shiftleftM : Board -> M Row
+shiftleftM = flatScore << (List.map mshiftM)
 
-shiftright : Board -> Board
-shiftright = List.map ( List.reverse << mshift << List.reverse)
+shiftrightM : Board -> M Row
+shiftrightM = flatScore << List.map ( List.reverse `compose` ( mshiftM << List.reverse))
 
-shiftup : Board -> Board
-shiftup = transpose << shiftleft << transpose
+shiftupM : Board -> M Row
+shiftupM = transpose `compose` (shiftleftM << transpose)
 
-shiftdown : Board -> Board
-shiftdown = transpose << shiftright << transpose
+shiftdownM : Board -> M Row
+shiftdownM = transpose `compose` (shiftrightM << transpose)
 
-updateBoard : Direction -> Board -> Board
+updateBoard : Direction -> Board -> (Board, Score)
 updateBoard input board = case input of
-    Left -> shiftleft board
-    Right -> shiftright board
-    Up -> shiftup board
-    Down -> shiftdown board
-    _ -> board
-
--- TODO
-updateScore : Direction -> Int -> Int
-updateScore input score = score
+    Left -> shiftleftM board
+    Right -> shiftrightM board
+    Up -> shiftupM board
+    Down -> shiftdownM board
+    _ -> (board, 0)
 
 -- SIGNALS
 

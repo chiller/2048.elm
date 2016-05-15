@@ -46,6 +46,28 @@ merge list = case list of
       else x :: merge (y::xs)
     xs -> xs
 
+mergeAndScore : List Int -> (List Int, Int)
+mergeAndScore list = case list of
+    (x::y::xs) ->
+      if (x == y) then
+         let
+          (mergedTail, score) = mergeAndScore xs
+         in ([x*2, 0] ++ mergedTail, score + x*2)
+      else
+        let
+          (mergedTail, score) = mergeAndScore (y::xs)
+        in (x::mergedTail, score)
+    xs -> (xs, 0)
+
+-- Begin weird stuff
+type alias M a = (List a, Int)
+compose : (List a -> List a) -> (List a -> M a) -> (List a -> M a)
+compose a b = \ xs -> let (is, i) = b xs in (a is, i)
+
+flatScore : List (M Int) -> M (List Int)
+flatScore xs = let (rows, scores) = List.unzip xs in (rows, List.sum scores)
+
+-- End weird stuff
 range : Int -> Int -> List Int
 range x y = case x == y of
     True -> [y]

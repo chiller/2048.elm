@@ -10,7 +10,7 @@ testUpdateBoard =
     let
       board = [[1,1], [0,0]]
       actual = updateBoard Left board
-      expected = [[2,0], [0,0]]
+      expected = ([[2,0], [0,0]], 2)
 
     in test "Update Board" (assertEqual expected actual)
 
