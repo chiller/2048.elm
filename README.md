@@ -9,5 +9,6 @@ open index.html
 
 use wasd to shift the board
 
+<img src="http://i.imgur.com/fQsj1FQ.png" alt="alt text" height="250" >
 
-![alt tag](http://i.imgur.com/fQsj1FQ.png)
+
