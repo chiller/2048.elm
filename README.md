@@ -8,3 +8,6 @@ open index.html
 ```
 
 use wasd to shift the board
+
+
+![alt tag](http://imgur.com/fQsj1FQ)
