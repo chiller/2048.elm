@@ -1,4 +1,4 @@
-module Util where
+module Util exposing (..)
 -- UTIL
 
 stail : List Int -> List Int

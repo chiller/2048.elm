@@ -1,4 +1,4 @@
-module Game where
+module Game exposing (..)
 
 import Keyboard
 import Char
@@ -14,12 +14,12 @@ type alias Game = {
   score: Score, board: Board, rand: Int,  seed: Random.Seed
 }
 
-defaultGame : Game
-defaultGame = {
+defaultGame : (Game, Cmd Direction)
+defaultGame = ({
   score = 0,
   seed = (Random.initialSeed 123),
   rand= 1,
-  board = [[0,1,0,1], [0,0,0,0], [0,0,0,0], [0,0,0,0]]}
+  board = [[0,1,0,1], [0,0,0,0], [0,0,0,0], [0,0,0,0]]}, Cmd.none)
 
 keyToDirection : Int -> Direction
 keyToDirection key =
@@ -30,21 +30,25 @@ keyToDirection key =
     'd' -> Right
     _ -> None
 
+
 -- UPDATE
-update : Direction -> Game -> Game
+randomNumber:  Random.Generator Int
+randomNumber = Random.int 0 100
+
+update : Direction -> Game -> (Game, Cmd Direction)
 update input game =
   let
-    (newrand, newseed) = Random.generate (Random.int 0 100) game.seed
+    (newrand, newseed) = Random.step randomNumber game.seed
     (board, scoreDelta) = updateBoard input game.board
     newboard = spawnTile newrand 1 board
   in case newboard of
     Just board ->
-    { game |
+    ({ game |
       score = scoreDelta + game.score,
       board = board,
       seed = newseed,
       rand = newrand
-    }
+    }, Cmd.none)
     Nothing -> defaultGame
 
 spawnTile : Int -> Int -> Board -> Maybe Board
@@ -65,19 +69,19 @@ updatezero index val list =
      _ -> Just (updateone (index % zeros) val list )
 
 mshiftM : Row -> M Int
-mshiftM = shift `compose` ( mergeAndScore << shift )
+mshiftM = compose shift ( mergeAndScore << shift )
 
 shiftleftM : Board -> M Row
 shiftleftM = flatScore << (List.map mshiftM)
 
 shiftrightM : Board -> M Row
-shiftrightM = flatScore << List.map ( List.reverse `compose` ( mshiftM << List.reverse))
+shiftrightM = flatScore << List.map ( compose List.reverse ( mshiftM << List.reverse))
 
 shiftupM : Board -> M Row
-shiftupM = transpose `compose` (shiftleftM << transpose)
+shiftupM = compose transpose (shiftleftM << transpose)
 
 shiftdownM : Board -> M Row
-shiftdownM = transpose `compose` (shiftrightM << transpose)
+shiftdownM = compose transpose (shiftrightM << transpose)
 
 updateBoard : Direction -> Board -> (Board, Score)
 updateBoard input board = case input of
@@ -87,11 +91,8 @@ updateBoard input board = case input of
     Down -> shiftdownM board
     _ -> (board, 0)
 
--- SIGNALS
+-- SUBSCRIPTIONS
 
-gameState : Signal Game
-gameState =
-  Signal.foldp update defaultGame direction
+subscriptions: Game -> Sub Direction
+subscriptions game = Keyboard.presses keyToDirection
 
-direction : Signal Direction
-direction = Signal.map keyToDirection Keyboard.presses

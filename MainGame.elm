@@ -1,9 +1,15 @@
-module MainGame where
+module MainGame exposing (..)
 
 import Html
-import Game exposing (gameState)
+import Game exposing (defaultGame, update, subscriptions)
 import View exposing (view)
 
-main : Signal Html.Html
-main =
-  Signal.map view gameState
+main = Html.program {
+    init = defaultGame
+    , update = update
+    , subscriptions = subscriptions
+    , view = view
+    }
+
+
+
